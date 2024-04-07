@@ -1,0 +1,451 @@
+basePath: /v2
+definitions:
+  model.ActionResults:
+    properties:
+      outputArgs:
+        items:
+          $ref: '#/definitions/model.Arg'
+        type: array
+    type: object
+  model.AgentDetails:
+    properties:
+      communicationsAddress:
+        type: string
+      mtpToUse:
+        type: string
+      supportedServiceElements:
+        items:
+          type: string
+        type: array
+    type: object
+  model.AgentSearchResults:
+    properties:
+      outputArgs:
+        items:
+          type: string
+        type: array
+    type: object
+  model.AgentStatus:
+    properties:
+      communicationsStatus:
+        type: string
+    type: object
+  model.Arg:
+    properties:
+      argName:
+        type: string
+      argValue:
+        type: string
+    type: object
+  model.AsyncActionResults:
+    properties:
+      asyncRequestID:
+        type: string
+    type: object
+  model.CreateAgentDetails:
+    properties:
+      communicationsAddress:
+        type: string
+      endpointID:
+        type: string
+      mtpToUse:
+        type: string
+      supportedServiceElements:
+        items:
+          type: string
+        type: array
+    type: object
+  model.CreateServiceElementDetail:
+    properties:
+      identifier:
+        $ref: '#/definitions/model.ServiceElementIdentifier'
+      name:
+        type: string
+      propertyList:
+        items:
+          $ref: '#/definitions/model.Element'
+        type: array
+    type: object
+  model.Element:
+    properties:
+      elementProperty:
+        type: string
+      elementValue:
+        type: string
+    type: object
+  model.ServiceElementAction:
+    properties:
+      inputArgs:
+        items:
+          $ref: '#/definitions/model.Arg'
+        type: array
+      name:
+        type: string
+    type: object
+  model.ServiceElementDetail:
+    properties:
+      identifier:
+        $ref: '#/definitions/model.ServiceElementIdentifier'
+      propertyList:
+        items:
+          $ref: '#/definitions/model.Element'
+        type: array
+    type: object
+  model.ServiceElementIdentifier:
+    properties:
+      uniqueKeyList:
+        items:
+          $ref: '#/definitions/model.Element'
+        type: array
+    type: object
+info:
+  contact: {}
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: User Services Platform - Controller API
+  version: 1.0.0
+paths:
+  /agents:
+    post:
+      consumes:
+      - application/json
+      description: Create a new USP Agent with a Given Endpoint ID
+      parameters:
+      - description: Details about the new USP Agent
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreateAgentDetails'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: USP Agent created
+        "400":
+          description: USP Agent creation failed
+      summary: Create a USP Agent with a Given Endpoint ID
+      tags:
+      - agents
+  /agents/{endpointID}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove an existing USP Agent
+      parameters:
+      - description: USP Agent Endpoint ID
+        in: path
+        name: endpointID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: USP Agent removed
+        "400":
+          description: USP Agent removal failed
+        "404":
+          description: USP Agent not found
+      summary: Delete a USP Agent
+      tags:
+      - agents
+    get:
+      consumes:
+      - application/json
+      description: Retrieve details related to a specific USP Agent
+      parameters:
+      - description: USP Agent Endpoint ID
+        in: path
+        name: endpointID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/model.AgentDetails'
+        "404":
+          description: USP Agent not found
+      summary: Get USP Agent Details
+      tags:
+      - agents
+    put:
+      consumes:
+      - application/json
+      description: Update the details of a USP Agent
+      parameters:
+      - description: USP Agent Endpoint ID
+        in: path
+        name: endpointID
+        required: true
+        type: string
+      - description: USP Agent details that need to be updated
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/model.AgentDetails'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: USP Agent updates applied
+        "400":
+          description: USP Agent update failed
+        "404":
+          description: USP Agent not found
+      summary: Update a USP Agent
+      tags:
+      - agents
+  /agents/{endpointID}/associatedAgents:
+    get:
+      consumes:
+      - application/json
+      description: Search for USP Agents associated to this USP Agent
+      parameters:
+      - description: USP Agent Endpoint ID
+        in: path
+        name: endpointID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/model.AgentSearchResults'
+        "404":
+          description: USP Agent not found
+      summary: Search for USP Agents associated to this USP Agent
+      tags:
+      - agents
+  /agents/{endpointID}/commands:
+    post:
+      consumes:
+      - application/json
+      description: Execute a Service Element Action on a USP Agent
+      parameters:
+      - description: USP Agent Endpoint ID
+        in: path
+        name: endpointID
+        required: true
+        type: string
+      - description: Service Element action to execute on the USP Agent
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/model.ServiceElementAction'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Asynchronous Action Invoked
+          schema:
+            $ref: '#/definitions/model.AsyncActionResults'
+        "202":
+          description: Synchronous Action Invoked
+          schema:
+            $ref: '#/definitions/model.ActionResults'
+        "400":
+          description: Service Element Action invocation failed
+        "404":
+          description: USP Agent not found
+      summary: Execute Service Element Action on USP Agent
+      tags:
+      - agents
+  /agents/{endpointID}/commands/{asyncRequestID}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the asynchronous results of a Service Element Action
+      parameters:
+      - description: USP Agent Endpoint ID
+        in: path
+        name: endpointID
+        required: true
+        type: string
+      - description: Service Element Asynchronous Action Request ID
+        in: path
+        name: asyncRequestID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/model.ActionResults'
+        "400":
+          description: Service Element Asynchronous Action Request ID not found
+        "404":
+          description: USP Agent not found
+      summary: Get Asynchronous Service Element Action results
+      tags:
+      - agents
+  /agents/{endpointID}/serviceElements:
+    post:
+      consumes:
+      - application/json
+      description: Update the USP Agent's configuration by creating a new instance
+        of the specified Service Element
+      parameters:
+      - description: USP Agent Endpoint ID
+        in: path
+        name: endpointID
+        required: true
+        type: string
+      - description: Service Element object that needs to be created on the USP Agent
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreateServiceElementDetail'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Service Element instance created
+        "400":
+          description: Service Element instance creation failed
+        "404":
+          description: USP Agent not found
+      summary: Create Service Element instance on a USP Agent
+      tags:
+      - agents
+  /agents/{endpointID}/serviceElements/{name}:
+    delete:
+      consumes:
+      - application/json
+      description: Update the USP Agent's configuration by removing an existing instance
+        of the specified Service Element
+      parameters:
+      - description: USP Agent Endpoint ID
+        in: path
+        name: endpointID
+        required: true
+        type: string
+      - description: Service Element Name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: The identifier of the Service Element to remove
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/model.ServiceElementIdentifier'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Service Element instance removed
+        "400":
+          description: Service Element instance removal failed
+        "404":
+          description: USP Agent not found
+      summary: Delete Service Element instance by Name from USP Agent
+      tags:
+      - agents
+    get:
+      consumes:
+      - application/json
+      description: Retrieve an instance of the specified Service Element from a specific
+        USP Agent
+      parameters:
+      - description: USP Agent Endpoint ID
+        in: path
+        name: endpointID
+        required: true
+        type: string
+      - description: Service Element Name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: The identifier of the Service Element to retrieve
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/model.ServiceElementIdentifier'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/model.ServiceElementDetail'
+        "400":
+          description: Service Element not found
+        "404":
+          description: USP Agent not found
+      summary: Get Service Element instance by Name from USP Agent
+      tags:
+      - agents
+    patch:
+      consumes:
+      - application/json
+      description: Update the USP Agent's configuration with the given instance of
+        the specified Service Element
+      parameters:
+      - description: USP Agent Endpoint ID
+        in: path
+        name: endpointID
+        required: true
+        type: string
+      - description: Service Element Name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: Service Element objects that need to be configured on the USP
+          Agent
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/model.ServiceElementDetail'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Service Element updates applied
+        "400":
+          description: Service Element update failed
+        "404":
+          description: USP Agent not found
+      summary: Update Service Element instance by Name on a USP Agent
+      tags:
+      - agents
+  /agents/{endpointID}/status:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve communications status of a specific USP Agent
+      parameters:
+      - description: USP Agent Endpoint ID
+        in: path
+        name: endpointID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/model.AgentStatus'
+        "404":
+          description: USP Agent not found
+      summary: Get USP Agent Status
+      tags:
+      - agents
+swagger: "2.0"
